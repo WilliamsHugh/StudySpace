@@ -14,7 +14,7 @@ export const demoData: AppData = {
     { id: 'schedule-ai', courseId: 'course-ai', dayOfWeek: 6, startTime: '09:00', endTime: '11:30', room: 'Lab 3' },
   ],
   assignments: [
-    { id: 'assignment-web', courseId: 'course-web', title: 'Hoàn thiện giao diện responsive', description: 'Kiểm tra desktop và mobile trước khi nộp.', dueDate: '2026-09-20T23:59', status: 'in-progress' },
+    { id: 'assignment-web', courseId: 'course-web', title: 'Hoàn thiện giao diện responsive', description: 'Kiểm tra desktop và mobile trước khi nộp.', dueDate: '2026-09-19T23:59', status: 'in-progress' },
     { id: 'assignment-db', courseId: 'course-db', title: 'Bài tập chuẩn hóa dữ liệu', description: 'Nộp file PDF kèm mô hình quan hệ.', dueDate: '2026-09-24T17:00', status: 'todo' },
     { id: 'assignment-ai', courseId: 'course-ai', title: 'Ôn tập tìm kiếm heuristic', description: '', dueDate: '2026-09-12T08:00', status: 'done' },
   ],
