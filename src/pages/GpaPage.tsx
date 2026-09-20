@@ -24,6 +24,7 @@ export function GpaPage({ data, updateData }: Props) {
   const [errors, setErrors] = useState<GpaValidationErrors>({})
   const gpa = calculateWeightedGpa(data.gpaEntries)
   const totalCredits = data.gpaEntries.reduce((sum, entry) => sum + entry.credits, 0)
+  const highestCredits = Math.max(0, ...data.gpaEntries.map((entry) => entry.credits))
 
   function submit(event: FormEvent) {
     event.preventDefault()
@@ -115,8 +116,8 @@ export function GpaPage({ data, updateData }: Props) {
               <thead><tr><th>Môn học</th><th>Hệ 10</th><th>Hệ 4</th><th>Tín chỉ</th><th /></tr></thead>
               <tbody>
                 {data.gpaEntries.map((entry) => (
-                  <tr key={entry.id}>
-                    <td>{data.courses.find((course) => course.id === entry.courseId)?.name ?? 'Môn học đã xóa'}</td>
+                  <tr key={entry.id} className={entry.credits === highestCredits ? 'high-credit-row' : undefined}>
+                    <td>{data.courses.find((course) => course.id === entry.courseId)?.name ?? 'Môn học đã xóa'}{entry.credits === highestCredits && <span className="credit-highlight">Nhiều tín chỉ</span>}</td>
                     <td>{entry.expectedGrade.toFixed(1)}</td>
                     <td>{convertGrade10To4(entry.expectedGrade)?.toFixed(1)}</td>
                     <td>{entry.credits}</td>
