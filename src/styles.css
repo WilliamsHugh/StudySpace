@@ -149,8 +149,14 @@ th { color: #64748b; font-size: .76rem; text-transform: uppercase; letter-spacin
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
+@media (max-width: 900px) {
+  .app-header { height: auto; padding: 14px 24px; align-items: stretch; flex-direction: column; gap: 12px; }
+  nav { flex-wrap: wrap; }
+}
+
 @media (max-width: 850px) {
-  .page-grid, .gpa-layout { grid-template-columns: 1fr; }
+  .page-grid, .gpa-layout { grid-template-columns: minmax(0, 1fr); }
+  .page-grid > *, .gpa-layout > * { min-width: 0; }
   .form-panel, .gpa-summary { position: static; }
   .gpa-summary { grid-row: auto; }
   .scale-panel { grid-column: auto; }
