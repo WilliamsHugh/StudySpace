@@ -20,13 +20,21 @@ export const assignmentRepository = {
 
 export const gpaRepository = {
   upsert(data: AppData, entry: GpaEntry): AppData {
-    const exists = data.gpaEntries.some((item) => item.id === entry.id)
-    return {
-      ...data,
-      gpaEntries: exists
-        ? data.gpaEntries.map((item) => (item.id === entry.id ? entry : item))
-        : [...data.gpaEntries, entry],
-    }
+    const existing = data.gpaEntries.find((item) => item.id === entry.id)
+      ?? data.gpaEntries.find((item) => item.courseId === entry.courseId)
+    const savedEntry = { ...entry, id: existing?.id ?? entry.id }
+    let inserted = false
+    const gpaEntries = data.gpaEntries.flatMap((item) => {
+      if (item.id === savedEntry.id || item.courseId === savedEntry.courseId) {
+        if (inserted) return []
+        inserted = true
+        return [savedEntry]
+      }
+      return [item]
+    })
+    if (!inserted) gpaEntries.push(savedEntry)
+
+    return { ...data, gpaEntries }
   },
   remove(data: AppData, id: string): AppData {
     return { ...data, gpaEntries: data.gpaEntries.filter((item) => item.id !== id) }
