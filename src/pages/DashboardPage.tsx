@@ -13,6 +13,7 @@ export function DashboardPage({ data, onNavigate }: { data: AppData; onNavigate:
   const overdue = getOverdueAssignments(data.assignments, now)
   const completed = data.assignments.filter((item) => item.status === 'done').length
   const inProgress = data.assignments.filter((item) => item.status === 'in-progress').length
+  const todo = data.assignments.filter((item) => item.status === 'todo').length
   const gpa = calculateWeightedGpa(data.gpaEntries)
   const filtered = upcoming.filter((item) => {
     const course = courseById.get(item.courseId)?.name ?? ''
@@ -39,7 +40,7 @@ export function DashboardPage({ data, onNavigate }: { data: AppData; onNavigate:
       </section>
       <section className="dash-panel dash-progress"><header className="dash-panel-head"><div><h2>Tiến độ học tập</h2><p>Tổng quan các công việc</p></div><span className="dash-spark">✧</span></header>
         <div className="dash-progress-number"><strong>{completion}<small>%</small></strong><span>đã hoàn thành</span></div><div className="dash-track"><span style={{ width: `${completion}%` }} /></div>
-        <div className="dash-legend"><span><i /> Hoàn thành <b>{completed}</b></span><span><i /> Đang thực hiện <b>{data.assignments.length - completed}</b></span></div>
+        <div className="dash-legend"><span className="legend-done"><i /> Hoàn thành <b>{completed}</b></span><span className="legend-progress"><i /> Đang thực hiện <b>{inProgress}</b></span><span className="legend-todo"><i /> Chưa làm <b>{todo}</b></span></div>
         <div className="dash-note">✓　{data.assignments.length ? `${inProgress} công việc đang được xử lý. Cứ tiếp tục từng bước!` : 'Thêm công việc để theo dõi tiến độ của bạn.'}</div>
       </section>
     </div>
