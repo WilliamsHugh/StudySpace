@@ -1,8 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { AppDataProvider } from '../context/AppDataContext'
+import { AppDataProvider, useAppData } from '../context/AppDataContext'
 import { AssignmentsPage } from './AssignmentsPage'
+
+function TestAssignmentsPage() {
+  const appData = useAppData()
+  const { updateData, saveCourse: _saveCourse, deleteCourse: _deleteCourse, saveSchedule: _saveSchedule, deleteSchedule: _deleteSchedule, ...data } = appData
+  return <AssignmentsPage data={data} updateData={updateData} />
+}
 
 const courses = [
   { id: 'c1', name: 'Cơ sở dữ liệu', teacher: '', credits: 3, color: '#6558d3' },
@@ -18,7 +24,7 @@ const assignments = [
 describe('AssignmentsPage filters and ordering', () => {
   it('filters by course and status, then restores all assignments', async () => {
     const user = userEvent.setup()
-    render(<AppDataProvider initialData={{ courses, assignments }}><AssignmentsPage /></AppDataProvider>)
+    render(<AppDataProvider initialData={{ courses, assignments }}><TestAssignmentsPage /></AppDataProvider>)
 
     expect(screen.getByRole('heading', { name: 'Bài SQL' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Bài React' })).toBeInTheDocument()
@@ -41,7 +47,7 @@ describe('AssignmentsPage filters and ordering', () => {
   })
 
   it('sorts the visible list by nearest deadline first', () => {
-    render(<AppDataProvider initialData={{ courses, assignments }}><AssignmentsPage /></AppDataProvider>)
+    render(<AppDataProvider initialData={{ courses, assignments }}><TestAssignmentsPage /></AppDataProvider>)
 
     expect(screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)).toEqual([
       'Bài React',
