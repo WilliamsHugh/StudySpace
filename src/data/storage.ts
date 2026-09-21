@@ -3,6 +3,10 @@ import type { AppData, Assignment, GpaEntry } from '../types'
 // Giữ một data access layer duy nhất cho mọi module trong ứng dụng.
 export { STORAGE_KEY, loadAppData, saveAppData } from './appData'
 
+// Re-export với tên dùng bởi StudySpaceContext (Trường)
+export { loadAppData as loadState, saveAppData as saveState } from './appData'
+
+
 export const assignmentRepository = {
   create(data: AppData, assignment: Assignment): AppData {
     return { ...data, assignments: [...data.assignments, assignment] }

@@ -44,3 +44,23 @@ export function calculateWeightedGpa(entries: GpaEntry[]): number | null {
   )
   return weightedPoints / totalCredits
 }
+
+// ── Helpers dùng bởi studySpaceReducer / StudySpaceContext ──────────────
+
+export interface GradeExpectation {
+  courseId: string
+  expectedScore: number | null
+  gradePoint: number | null
+}
+
+export function createGradeExpectation(courseId: string, expectedScore: number): GradeExpectation {
+  const gp = convertGrade10To4(expectedScore)
+  return { courseId, expectedScore, gradePoint: gp }
+}
+
+export function upsertGradeExpectation(
+  expectations: GradeExpectation[],
+  next: GradeExpectation,
+): GradeExpectation[] {
+  return [...expectations.filter((e) => e.courseId !== next.courseId), next]
+}
