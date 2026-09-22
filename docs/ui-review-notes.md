@@ -35,6 +35,6 @@
 
 ## Kiểm tra tự động
 
-- `npm test -- --run`: 26 test pass.
+- `npm test -- --run`: 28 test pass trên nhánh tổng hợp.
 - `npm run build`: pass.
 - Ở viewport mobile 390 px, Dashboard, Courses, Schedule, Assignments, GPA và hai popup đều có `scrollWidth = clientWidth = 390` sau sửa.

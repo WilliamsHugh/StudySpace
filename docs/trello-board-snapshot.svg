@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="850" viewBox="0 0 1680 850" role="img" aria-labelledby="title desc">
+<title id="title">DeadlineTracker board snapshot, 20 September 2026</title>
+<desc id="desc">Summary of seven live Trello lists, not a screenshot of Trello UI.</desc>
+<rect width="1680" height="850" fill="#0b5b9a"/>
+<text x="30" y="42" fill="#fff" font-family="Arial,sans-serif" font-size="27" font-weight="700">DeadlineTracker — trạng thái Trello · 20/09/2026</text>
+<text x="30" y="70" fill="#d9efff" font-family="Arial,sans-serif" font-size="14">Sơ đồ tổng hợp dữ liệu qua Trello MCP, không phải ảnh chụp nguyên bản giao diện.</text>
+<g font-family="Arial,sans-serif" fill="#172b4d">
+<g transform="translate(24,95)"><rect width="222" height="720" rx="10" fill="#e9edf2"/><text x="12" y="28" font-size="17" font-weight="700">Daily Harvest · 6</text>
+<g font-size="12"><rect x="8" y="40" width="206" height="62" rx="6" fill="#fff"/><text x="16" y="62">✓ Day 1 — scope/design</text><text x="16" y="82">Hoàn thành</text>
+<rect x="8" y="108" width="206" height="62" rx="6" fill="#fff"/><text x="16" y="130">✓ Day 2 — setup/courses</text><text x="16" y="150">Hoàn thành</text>
+<rect x="8" y="176" width="206" height="62" rx="6" fill="#fff"/><text x="16" y="198">✓ Day 3 — schedule</text><text x="16" y="218">Hoàn thành</text>
+<rect x="8" y="244" width="206" height="62" rx="6" fill="#fff"/><text x="16" y="266">✓ Day 4 — assignments</text><text x="16" y="286">Hoàn thành</text>
+<rect x="8" y="312" width="206" height="62" rx="6" fill="#fff"/><text x="16" y="334">✓ Day 5 — GPA</text><text x="16" y="354">Hoàn thành</text>
+<rect x="8" y="380" width="206" height="70" rx="6" fill="#fff4ce"/><text x="16" y="402">○ Day 7 — final readiness</text><text x="16" y="422">Chờ full-system test</text>
+<text x="16" y="478" font-size="12" fill="#526581">Day 6 đã chuyển Done</text></g></g>
+<g transform="translate(258,95)"><rect width="222" height="720" rx="10" fill="#e9edf2"/><text x="12" y="28" font-size="17" font-weight="700">Bug / Issue · 1</text>
+<g font-size="12"><rect x="8" y="40" width="206" height="72" rx="6" fill="#fff"/><text x="16" y="64">✓ Popup close UI</text><text x="16" y="86">GPA bug đã chuyển Done</text></g></g>
+<g transform="translate(492,95)"><rect width="222" height="720" rx="10" fill="#e9edf2"/><text x="12" y="28" font-size="17" font-weight="700">Testing · 4</text>
+<g font-size="12"><rect x="8" y="40" width="206" height="76" rx="6" fill="#fff4ce"/><text x="16" y="64">○ Schedule sửa/xóa</text><text x="16" y="86">Trường — mở</text>
+<rect x="8" y="122" width="206" height="76" rx="6" fill="#fff4ce"/><text x="16" y="146">○ Assignment filters</text><text x="16" y="168">Thế — mở</text>
+<rect x="8" y="204" width="206" height="76" rx="6" fill="#fff4ce"/><text x="16" y="228">○ GPA regression</text><text x="16" y="250">Thế — mở</text>
+<rect x="8" y="286" width="206" height="76" rx="6" fill="#fff4ce"/><text x="16" y="310">○ Full-system testing</text><text x="16" y="332">Trường — mở</text></g></g>
+<g transform="translate(726,95)"><rect width="222" height="720" rx="10" fill="#e9edf2"/><text x="12" y="28" font-size="17" font-weight="700">Review · 0 open</text><text x="16" y="74" font-size="13" fill="#526581">Các review của Thuận</text><text x="16" y="96" font-size="13" fill="#526581">đã chuyển sang Done.</text></g>
+<g transform="translate(960,95)"><rect width="222" height="720" rx="10" fill="#e9edf2"/><text x="12" y="28" font-size="17" font-weight="700">To Do · 1</text>
+<g font-size="12"><rect x="8" y="40" width="206" height="76" rx="6" fill="#fff4ce"/><text x="16" y="64">○ Filter/sorting</text><text x="16" y="86">Thế — mở</text></g></g>
+<g transform="translate(1194,95)"><rect width="222" height="720" rx="10" fill="#e9edf2"/><text x="12" y="28" font-size="17" font-weight="700">Doing · 0</text><text x="16" y="74" font-size="13" fill="#526581">Không còn thẻ đang làm.</text></g>
+<g transform="translate(1428,95)"><rect width="222" height="720" rx="10" fill="#e9edf2"/><text x="12" y="28" font-size="17" font-weight="700">Done · 23</text>
+<g font-size="12"><rect x="8" y="40" width="206" height="76" rx="6" fill="#dff5e5"/><text x="16" y="64">✓ GPA duplicate bug</text><text x="16" y="86">Regression có trong code</text>
+<rect x="8" y="122" width="206" height="76" rx="6" fill="#dff5e5"/><text x="16" y="146">✓ Responsive + popup review</text><text x="16" y="168">Ghi chú và ảnh đã lưu</text>
+<rect x="8" y="204" width="206" height="76" rx="6" fill="#dff5e5"/><text x="16" y="228">✓ Day 3 evidence review</text><text x="16" y="250">Follow-up test vẫn mở</text>
+<rect x="8" y="286" width="206" height="76" rx="6" fill="#dff5e5"/><text x="16" y="310">✓ UI polish + critical fixes</text><text x="16" y="332">✓ Demo report/script</text>
+<rect x="8" y="368" width="206" height="76" rx="6" fill="#dff5e5"/><text x="16" y="392">✓ Dashboard summary</text><text x="16" y="414">✓ Daily Harvest Day 6</text>
+<text x="16" y="478" fill="#526581">Còn 17 thẻ Done trước đó.</text></g></g>
+</g>
+<text x="30" y="838" fill="#d9efff" font-family="Arial,sans-serif" font-size="12">Nguồn: board DeadlineTracker qua Trello MCP. Xem board trực tiếp để biết thay đổi phát sinh sau thời điểm snapshot.</text>
+</svg>
