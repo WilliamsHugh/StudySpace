@@ -30,7 +30,7 @@ function AppContent() {
       {page === 'courses' && <CoursesPage />}
       {page === 'schedule' && <SchedulePage />}
       {(page === 'assignments' || page === 'gpa') && (
-        <main>
+        <div className="page">
           <div className="page-title">
             <div>
               <span className="eyebrow">Deadline Tracker</span>
@@ -39,7 +39,7 @@ function AppContent() {
             <p>{page === 'assignments' ? 'Sắp xếp ưu tiên, theo dõi tiến độ và không bỏ lỡ hạn nộp.' : 'Thử các mức điểm dự kiến và xem GPA có trọng số ngay lập tức.'}</p>
           </div>
           {page === 'assignments' ? <AssignmentsPage data={data} updateData={updateData} /> : <GpaPage data={data} updateData={updateData} />}
-        </main>
+        </div>
       )}
     </AppShell>
   )
