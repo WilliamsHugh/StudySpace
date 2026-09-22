@@ -26,7 +26,7 @@
 ```text
 npm test -- --run
 9 test files passed
-30 tests passed
+32 tests passed
 
 npm run build
 production build passed
