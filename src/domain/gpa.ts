@@ -1,46 +1,43 @@
-import type { GpaEntry } from '../types'
+import type { Course, GradeExpectation } from './types'
 
-export type GpaValidationErrors = Partial<Record<'courseId' | 'expectedGrade' | 'credits', string>>
-
-// Thang quy đổi hệ 10 -> hệ 4 dùng cho MVP, theo các ngưỡng phổ biến tại Việt Nam.
-export const gradeScale = [
-  { minimum: 8.5, point: 4.0 },
-  { minimum: 8.0, point: 3.5 },
-  { minimum: 7.0, point: 3.0 },
-  { minimum: 6.5, point: 2.5 },
-  { minimum: 5.5, point: 2.0 },
-  { minimum: 5.0, point: 1.5 },
-  { minimum: 4.0, point: 1.0 },
-  { minimum: 0, point: 0 },
-] as const
-
-export function convertGrade10To4(grade: number): number | null {
-  if (!Number.isFinite(grade) || grade < 0 || grade > 10) return null
-  return gradeScale.find((band) => grade >= band.minimum)?.point ?? 0
+export function scoreToGradePoint(score: number): number {
+  if (!Number.isFinite(score) || score < 0 || score > 10) throw new RangeError('Điểm phải nằm trong khoảng 0 đến 10.')
+  if (score >= 8.5) return 4
+  if (score >= 8) return 3.5
+  if (score >= 7) return 3
+  if (score >= 6.5) return 2.5
+  if (score >= 5.5) return 2
+  if (score >= 5) return 1.5
+  if (score >= 4) return 1
+  return 0
 }
 
-export function validateGpaEntry(entry: Omit<GpaEntry, 'id'>): GpaValidationErrors {
-  const errors: GpaValidationErrors = {}
-  if (!entry.courseId) errors.courseId = 'Vui lòng chọn môn học.'
-  if (convertGrade10To4(entry.expectedGrade) === null) {
-    errors.expectedGrade = 'Điểm phải nằm trong khoảng từ 0 đến 10.'
-  }
-  if (!Number.isFinite(entry.credits) || entry.credits <= 0) {
-    errors.credits = 'Số tín chỉ phải lớn hơn 0.'
-  }
-  return errors
+export function createGradeExpectation(courseId: string, expectedScore: number): GradeExpectation {
+  return { courseId, expectedScore, gradePoint: scoreToGradePoint(expectedScore) }
 }
 
-export function calculateWeightedGpa(entries: GpaEntry[]): number | null {
-  const validEntries = entries.filter(
-    (entry) => convertGrade10To4(entry.expectedGrade) !== null && Number.isFinite(entry.credits) && entry.credits > 0,
-  )
-  const totalCredits = validEntries.reduce((sum, entry) => sum + entry.credits, 0)
-  if (totalCredits === 0) return null
+export function upsertGradeExpectation(
+  expectations: GradeExpectation[],
+  next: GradeExpectation,
+): GradeExpectation[] {
+  return [...expectations.filter((entry) => entry.courseId !== next.courseId), next]
+}
 
-  const weightedPoints = validEntries.reduce(
-    (sum, entry) => sum + (convertGrade10To4(entry.expectedGrade) ?? 0) * entry.credits,
-    0,
-  )
-  return weightedPoints / totalCredits
+export function uniqueGradeExpectations(expectations: GradeExpectation[]): GradeExpectation[] {
+  return [...new Map(expectations.map((entry) => [entry.courseId, entry])).values()]
+}
+
+export function calculateGpa(courses: Course[], expectations: GradeExpectation[]): number | null {
+  const effectiveByCourse = new Map(uniqueGradeExpectations(expectations).map((entry) => [entry.courseId, entry]))
+  let weightedPoints = 0
+  let credits = 0
+
+  for (const course of courses) {
+    const entry = effectiveByCourse.get(course.id)
+    if (entry?.gradePoint == null || course.credits <= 0) continue
+    weightedPoints += entry.gradePoint * course.credits
+    credits += course.credits
+  }
+
+  return credits === 0 ? null : weightedPoints / credits
 }

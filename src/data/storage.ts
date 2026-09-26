@@ -1,42 +1,35 @@
-import type { AppData, Assignment, GpaEntry } from '../types'
+import { defaultState } from './defaultState'
+import { uniqueGradeExpectations } from '../domain/gpa'
+import type { StudySpaceState } from '../domain/types'
 
-// Giữ một data access layer duy nhất cho mọi module trong ứng dụng.
-export { STORAGE_KEY, loadAppData, saveAppData } from './appData'
+export const STORAGE_KEY = 'studyspace.state.v1'
 
-export const assignmentRepository = {
-  create(data: AppData, assignment: Assignment): AppData {
-    return { ...data, assignments: [...data.assignments, assignment] }
-  },
-  update(data: AppData, assignment: Assignment): AppData {
-    return {
-      ...data,
-      assignments: data.assignments.map((item) => (item.id === assignment.id ? assignment : item)),
+export type StorageLike = Pick<Storage, 'getItem' | 'setItem'>
+
+export function loadState(storage: StorageLike): StudySpaceState {
+  try {
+    const value = storage.getItem(STORAGE_KEY)
+    if (!value) return structuredClone(defaultState)
+    const parsed = JSON.parse(value) as Partial<StudySpaceState>
+    if (parsed.version !== 1 || !Array.isArray(parsed.courses) || !Array.isArray(parsed.assignments)) {
+      return structuredClone(defaultState)
     }
-  },
-  remove(data: AppData, id: string): AppData {
-    return { ...data, assignments: data.assignments.filter((item) => item.id !== id) }
-  },
+    return {
+      ...structuredClone(defaultState),
+      ...parsed,
+      gradeExpectations: uniqueGradeExpectations(Array.isArray(parsed.gradeExpectations) ? parsed.gradeExpectations : []),
+      settings: { ...defaultState.settings, ...parsed.settings },
+    }
+  } catch {
+    return structuredClone(defaultState)
+  }
 }
 
-export const gpaRepository = {
-  upsert(data: AppData, entry: GpaEntry): AppData {
-    const existing = data.gpaEntries.find((item) => item.id === entry.id)
-      ?? data.gpaEntries.find((item) => item.courseId === entry.courseId)
-    const savedEntry = { ...entry, id: existing?.id ?? entry.id }
-    let inserted = false
-    const gpaEntries = data.gpaEntries.flatMap((item) => {
-      if (item.id === savedEntry.id || item.courseId === savedEntry.courseId) {
-        if (inserted) return []
-        inserted = true
-        return [savedEntry]
-      }
-      return [item]
-    })
-    if (!inserted) gpaEntries.push(savedEntry)
-
-    return { ...data, gpaEntries }
-  },
-  remove(data: AppData, id: string): AppData {
-    return { ...data, gpaEntries: data.gpaEntries.filter((item) => item.id !== id) }
-  },
+export function saveState(storage: StorageLike, state: StudySpaceState): boolean {
+  try {
+    storage.setItem(STORAGE_KEY, JSON.stringify(state))
+    return true
+  } catch {
+    return false
+  }
 }
