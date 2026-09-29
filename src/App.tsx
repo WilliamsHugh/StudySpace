@@ -3,8 +3,8 @@ import { AppShell } from './components/layout/AppShell'
 import { AssignmentsPage } from './pages/AssignmentsPage'
 import { CoursesPage } from './pages/CoursesPage'
 import { DashboardPage } from './pages/DashboardPage'
-import { FoundationPage } from './pages/FoundationPage'
 import { GpaPage } from './pages/GpaPage'
+import { SchedulePage } from './features/schedule/SchedulePage'
 
 export type PageId = 'dashboard' | 'courses' | 'schedule' | 'assignments' | 'gpa'
 
@@ -14,9 +14,9 @@ const titles: Record<PageId, string> = {
 
 export default function App() {
   const [page, setPage] = useState<PageId>('dashboard')
-  const content = page === 'dashboard' ? <DashboardPage />
+  const content = page === 'dashboard' ? <DashboardPage onNavigate={setPage} />
     : page === 'courses' ? <CoursesPage />
-    : page === 'schedule' ? <FoundationPage title="Lịch học" description="Quản lý thời khóa biểu theo tuần và từng môn học." />
+    : page === 'schedule' ? <SchedulePage />
     : page === 'assignments' ? <AssignmentsPage />
     : <GpaPage />
 

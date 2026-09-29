@@ -2,8 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useReducer, type PropsWi
 import { createCourse } from '../domain/course'
 import { createGradeExpectation } from '../domain/gpa'
 import { createAssignment } from '../domain/assignment'
-import type { AssignmentDraft, CourseDraft, StudySpaceState } from '../domain/types'
-import { loadState, saveState } from '../data/storage'
+import { createSchedule } from '../domain/schedule'
+import type { AssignmentDraft, CourseDraft, ScheduleDraft, ScheduleEntry, StudySpaceState } from '../domain/types'
+import { loadState, saveState, type StorageLike } from '../data/storage'
 import { studySpaceReducer } from './studySpaceReducer'
 
 interface StudySpaceContextValue {
@@ -15,16 +16,21 @@ interface StudySpaceContextValue {
   addAssignment: (draft: AssignmentDraft) => void
   updateAssignment: (id: string, draft: AssignmentDraft) => void
   deleteAssignment: (id: string) => void
+  addSchedule: (draft: ScheduleDraft) => void
+  updateSchedule: (entry: ScheduleEntry) => void
+  deleteSchedule: (id: string) => void
 }
 
 const StudySpaceContext = createContext<StudySpaceContextValue | null>(null)
 
-export function StudySpaceProvider({ children }: PropsWithChildren) {
-  const [state, dispatch] = useReducer(studySpaceReducer, undefined, () => loadState(window.localStorage))
+type StudySpaceProviderProps = PropsWithChildren<{ initialState?: StudySpaceState; storage?: StorageLike }>
+
+export function StudySpaceProvider({ children, initialState, storage = window.localStorage }: StudySpaceProviderProps) {
+  const [state, dispatch] = useReducer(studySpaceReducer, undefined, () => initialState ?? loadState(storage))
 
   useEffect(() => {
-    saveState(window.localStorage, state)
-  }, [state])
+    saveState(storage, state)
+  }, [state, storage])
 
   const value = useMemo<StudySpaceContextValue>(() => ({
     state,
@@ -43,6 +49,9 @@ export function StudySpaceProvider({ children }: PropsWithChildren) {
       payload: { id, changes: draft, updatedAt: new Date().toISOString() },
     }),
     deleteAssignment: (id) => dispatch({ type: 'assignment/delete', payload: { id } }),
+    addSchedule: (draft) => dispatch({ type: 'schedule/add', payload: createSchedule(draft) }),
+    updateSchedule: (entry) => dispatch({ type: 'schedule/update', payload: { ...entry, room: entry.room.trim() } }),
+    deleteSchedule: (id) => dispatch({ type: 'schedule/delete', payload: { id } }),
   }), [state])
 
   return <StudySpaceContext.Provider value={value}>{children}</StudySpaceContext.Provider>

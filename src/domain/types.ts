@@ -42,6 +42,8 @@ export interface ScheduleEntry {
   room: string
 }
 
+export type ScheduleDraft = Omit<ScheduleEntry, 'id'>
+
 export interface Settings {
   displayName: string
   weekStartsOn: 1 | 7
