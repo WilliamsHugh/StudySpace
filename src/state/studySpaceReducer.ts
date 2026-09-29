@@ -1,5 +1,5 @@
 import { upsertGradeExpectation } from '../domain/gpa'
-import type { Assignment, AssignmentDraft, Course, CourseDraft, GradeExpectation, StudySpaceState } from '../domain/types'
+import type { Assignment, AssignmentDraft, Course, CourseDraft, GradeExpectation, ScheduleEntry, StudySpaceState } from '../domain/types'
 
 export type StudySpaceAction =
   | { type: 'course/add'; payload: Course }
@@ -10,6 +10,9 @@ export type StudySpaceAction =
   | { type: 'assignment/add'; payload: Assignment }
   | { type: 'assignment/update'; payload: { id: string; changes: AssignmentDraft; updatedAt: string } }
   | { type: 'assignment/delete'; payload: { id: string } }
+  | { type: 'schedule/add'; payload: ScheduleEntry }
+  | { type: 'schedule/update'; payload: ScheduleEntry }
+  | { type: 'schedule/delete'; payload: { id: string } }
   | { type: 'state/replace'; payload: StudySpaceState }
 
 export function studySpaceReducer(state: StudySpaceState, action: StudySpaceAction): StudySpaceState {
@@ -59,6 +62,15 @@ export function studySpaceReducer(state: StudySpaceState, action: StudySpaceActi
         ...state,
         assignments: state.assignments.filter((assignment) => assignment.id !== action.payload.id),
       }
+    case 'schedule/add':
+      return { ...state, schedule: [...state.schedule, action.payload] }
+    case 'schedule/update':
+      return {
+        ...state,
+        schedule: state.schedule.map((entry) => entry.id === action.payload.id ? action.payload : entry),
+      }
+    case 'schedule/delete':
+      return { ...state, schedule: state.schedule.filter((entry) => entry.id !== action.payload.id) }
     case 'state/replace':
       return action.payload
   }

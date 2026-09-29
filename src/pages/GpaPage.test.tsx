@@ -1,31 +1,38 @@
-import { render, screen, within } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it } from 'vitest'
+import { defaultState } from '../data/defaultState'
+import type { StudySpaceState } from '../domain/types'
+import { StudySpaceProvider, useStudySpace } from '../state/StudySpaceContext'
 import { GpaPage } from './GpaPage'
-import type { AppData } from '../types'
 
-const data: AppData = {
-  courses: [
-    { id: 'c1', name: 'Cơ sở dữ liệu', teacher: '', credits: 4, color: '#6558d3' },
-    { id: 'c2', name: 'Tiếng Anh', teacher: '', credits: 2, color: '#2563eb' },
-  ],
-  schedules: [],
-  assignments: [],
-  gpaEntries: [
-    { id: 'g1', courseId: 'c1', expectedGrade: 8, credits: 4 },
-    { id: 'g2', courseId: 'c2', expectedGrade: 7, credits: 2 },
-  ],
+const state: StudySpaceState = {
+  ...structuredClone(defaultState),
+  courses: [{
+    id: 'course-1', name: 'Cơ sở dữ liệu', teacher: '', credits: 4,
+    color: '#6657d9', createdAt: '', updatedAt: '',
+  }],
+}
+
+function GradeProbe() {
+  const { state: current } = useStudySpace()
+  const expectation = current.gradeExpectations[0]
+  return <output aria-label="GPA state">{current.gradeExpectations.length}:{expectation?.expectedScore ?? 'none'}</output>
 }
 
 describe('GpaPage', () => {
-  it('highlights the course with the most credits in the entered results', () => {
-    render(<GpaPage data={data} updateData={vi.fn()} />)
+  it('updates the effective entry when the same course score changes', async () => {
+    const user = userEvent.setup()
+    render(<StudySpaceProvider initialState={state}><GpaPage /><GradeProbe /></StudySpaceProvider>)
+    const input = screen.getByRole('spinbutton', { name: 'Điểm hệ 10 của Cơ sở dữ liệu' })
 
-    const highCreditCourseCell = screen.getAllByText('Cơ sở dữ liệu').find((element) => element.tagName === 'TD')
-    const regularCourseCell = screen.getAllByText('Tiếng Anh').find((element) => element.tagName === 'TD')
-    const highCreditRow = highCreditCourseCell?.closest('tr')
-    const regularRow = regularCourseCell?.closest('tr')
-    expect(highCreditRow).toHaveClass('high-credit-row')
-    expect(within(highCreditRow as HTMLElement).getByText('Nhiều tín chỉ')).toBeInTheDocument()
-    expect(regularRow).not.toHaveClass('high-credit-row')
+    await user.type(input, '9')
+    expect(screen.getByLabelText('GPA state')).toHaveTextContent('1:9')
+    expect(screen.getByText('4.00')).toBeInTheDocument()
+
+    await user.clear(input)
+    await user.type(input, '7')
+    expect(screen.getByLabelText('GPA state')).toHaveTextContent('1:7')
+    expect(screen.getByText('3.00')).toBeInTheDocument()
   })
 })
