@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import { StudySpaceProvider } from './state/StudySpaceContext'
 import './styles.css'
+import './responsive.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode><StudySpaceProvider><App /></StudySpaceProvider></StrictMode>,
