@@ -41,3 +41,11 @@ export interface AppData {
   assignments: Assignment[]
   gpaEntries: GpaEntry[]
 }
+
+export interface BackupEnvelope {
+  schemaVersion: number
+  exportedAt: string
+  appVersion: string
+  data: AppData
+}
+
