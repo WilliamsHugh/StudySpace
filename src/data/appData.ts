@@ -1,4 +1,5 @@
 import type { AppData } from '../types'
+import { migrateBackupPayload, sanitizeAppData } from './schemaValidation'
 
 export const STORAGE_KEY = 'deadline-tracker:data'
 
@@ -24,10 +25,13 @@ export const demoData: AppData = {
   ],
 }
 
-function isAppData(value: unknown): value is AppData {
+export function isAppData(value: unknown): value is AppData {
   if (!value || typeof value !== 'object') return false
   const data = value as Partial<AppData>
-  return Array.isArray(data.courses) && Array.isArray(data.schedules)
+  return Array.isArray(data.courses)
+    && Array.isArray(data.schedules)
+    && Array.isArray(data.assignments)
+    && Array.isArray(data.gpaEntries)
 }
 
 export function loadAppData(storage: Pick<Storage, 'getItem'> = localStorage): AppData {
@@ -35,17 +39,29 @@ export function loadAppData(storage: Pick<Storage, 'getItem'> = localStorage): A
     const saved = storage.getItem(STORAGE_KEY)
     if (!saved) return structuredClone(demoData)
     const parsed: unknown = JSON.parse(saved)
-    if (!isAppData(parsed)) return structuredClone(demoData)
-    return {
-      ...parsed,
-      assignments: Array.isArray(parsed.assignments) ? parsed.assignments : [],
-      gpaEntries: Array.isArray(parsed.gpaEntries) ? parsed.gpaEntries : [],
+    if (!parsed || typeof parsed !== 'object') return structuredClone(demoData)
+
+    // Nếu là payload backup envelope (có schemaVersion), sử dụng migrateBackupPayload
+    if ('schemaVersion' in (parsed as Record<string, unknown>)) {
+      const migrated = migrateBackupPayload(parsed)
+      if (migrated.success) return migrated.data
+      return structuredClone(demoData)
     }
+
+    // Sanitize từng record để loại bỏ phần tử hỏng, ngăn crash app ở cấp phần tử
+    const sanitized = sanitizeAppData(parsed)
+    return sanitized.data
   } catch {
     return structuredClone(demoData)
   }
 }
 
-export function saveAppData(data: AppData, storage: Pick<Storage, 'setItem'> = localStorage) {
-  storage.setItem(STORAGE_KEY, JSON.stringify(data))
+export function saveAppData(data: AppData, storage: Pick<Storage, 'setItem'> = localStorage): boolean {
+  try {
+    storage.setItem(STORAGE_KEY, JSON.stringify(data))
+    return true
+  } catch (error) {
+    console.error('Không thể ghi dữ liệu vào localStorage:', error)
+    return false
+  }
 }

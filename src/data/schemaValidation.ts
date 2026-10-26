@@ -158,12 +158,13 @@ export function sanitizeAppData(raw: unknown): SanitizationResult {
   }
 
   const courseIds = new Set(courses.map((c) => c.id))
+  const checkCourseIds = courseIds.size > 0 ? courseIds : undefined
 
   // 2. Sanitize Schedules
   const schedules: Schedule[] = []
   if (Array.isArray(root.schedules)) {
     for (const s of root.schedules) {
-      const valid = validateSchedule(s, courseIds)
+      const valid = validateSchedule(s, checkCourseIds)
       if (valid) {
         schedules.push(valid)
       } else {
@@ -178,7 +179,7 @@ export function sanitizeAppData(raw: unknown): SanitizationResult {
   const assignments: Assignment[] = []
   if (Array.isArray(root.assignments)) {
     for (const a of root.assignments) {
-      const valid = validateAssignment(a, courseIds)
+      const valid = validateAssignment(a, checkCourseIds)
       if (valid) {
         assignments.push(valid)
       } else {
@@ -194,7 +195,7 @@ export function sanitizeAppData(raw: unknown): SanitizationResult {
   const seenGpaCourses = new Set<string>()
   if (Array.isArray(root.gpaEntries)) {
     for (const g of root.gpaEntries) {
-      const valid = validateGpaEntry(g, courseIds)
+      const valid = validateGpaEntry(g, checkCourseIds)
       if (valid && !seenGpaCourses.has(valid.courseId)) {
         seenGpaCourses.add(valid.courseId)
         gpaEntries.push(valid)

@@ -1,7 +1,8 @@
 import type { AppData, Assignment, GpaEntry } from '../types'
 
 // Giữ một data access layer duy nhất cho mọi module trong ứng dụng.
-export { STORAGE_KEY, loadAppData, saveAppData } from './appData'
+export { STORAGE_KEY, isAppData, loadAppData, saveAppData } from './appData'
+export { createBackupEnvelope, migrateBackupPayload, sanitizeAppData } from './schemaValidation'
 
 export const assignmentRepository = {
   create(data: AppData, assignment: Assignment): AppData {
