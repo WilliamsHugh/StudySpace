@@ -18,6 +18,7 @@ export interface Schedule {
 }
 
 export type AssignmentStatus = 'todo' | 'in-progress' | 'done'
+export type AssignmentPriority = 'low' | 'medium' | 'high'
 
 export interface Assignment {
   id: string
@@ -26,6 +27,8 @@ export interface Assignment {
   description: string
   dueDate: string
   status: AssignmentStatus
+  priority?: AssignmentPriority
+  tags?: string[]
 }
 
 export interface GpaEntry {

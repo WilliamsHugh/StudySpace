@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { getOverdueAssignments, getUpcomingAssignments, statusLabels } from '../domain/assignments'
+import { getOverdueAssignments, getUpcomingAssignments, priorityLabels, statusLabels } from '../domain/assignments'
 import { calculateWeightedGpa } from '../domain/gpa'
 import type { AppData, Assignment } from '../types'
 
@@ -35,7 +35,8 @@ export function DashboardPage({ data, onNavigate }: { data: AppData; onNavigate:
         <label className="dash-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm công việc hoặc môn học" /></label>
         <div className="dash-list">{filtered.length === 0 ? <div className="dash-empty"><span>✓</span><strong>{upcoming.length ? 'Không tìm thấy công việc' : 'Chưa có deadline sắp tới'}</strong><small>{upcoming.length ? 'Thử từ khóa khác nhé.' : 'Thêm deadline để bắt đầu theo dõi.'}</small></div> : filtered.map((item: Assignment) => {
           const course = courseById.get(item.courseId)
-          return <article className="dash-assignment" key={item.id}><i style={{ background: course?.color ?? '#a8aebd' }} /><div><strong>{item.title}</strong><small>{course?.name ?? 'Môn học đã xóa'}</small></div><span className={`dash-status ${item.status}`}>{statusLabels[item.status]}</span><time>{new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'short' }).format(new Date(item.dueDate))}</time></article>
+          const priority = item.priority ?? 'medium'
+          return <article className="dash-assignment" key={item.id}><i style={{ background: course?.color ?? '#a8aebd' }} /><div><strong>{item.title}</strong><small>{course?.name ?? 'Môn học đã xóa'}</small>{item.tags && item.tags.length > 0 && <div className="dash-tags">{item.tags.map((t) => <span key={t} className="dash-tag">#{t}</span>)}</div>}</div><div className="dash-assignment-badges"><span className={`dash-priority ${priority}`}>{priorityLabels[priority]}</span><span className={`dash-status ${item.status}`}>{statusLabels[item.status]}</span></div><time>{new Intl.DateTimeFormat('vi-VN', { day: 'numeric', month: 'short' }).format(new Date(item.dueDate))}</time></article>
         })}</div>
       </section>
       <section className="dash-panel dash-progress"><header className="dash-panel-head"><div><h2>Tiến độ học tập</h2><p>Tổng quan các công việc</p></div><span className="dash-spark">✧</span></header>

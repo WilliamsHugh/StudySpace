@@ -1,4 +1,4 @@
-import type { AppData, Assignment, AssignmentStatus, BackupEnvelope, Course, DayOfWeek, GpaEntry, Schedule } from '../types'
+import type { AppData, Assignment, AssignmentPriority, AssignmentStatus, BackupEnvelope, Course, DayOfWeek, GpaEntry, Schedule } from '../types'
 
 const CURRENT_SCHEMA_VERSION = 2
 const APP_VERSION = '0.2.0'
@@ -86,7 +86,16 @@ export function validateAssignment(raw: unknown, validCourseIds?: Set<string>): 
 
   const dueDate = isNonEmptyString(item.dueDate) ? item.dueDate : new Date().toISOString()
 
-  return {
+  const validPriorities: AssignmentPriority[] = ['low', 'medium', 'high']
+  const priority: AssignmentPriority | undefined = item.priority && validPriorities.includes(item.priority as AssignmentPriority)
+    ? (item.priority as AssignmentPriority)
+    : undefined
+
+  const tags: string[] | undefined = Array.isArray(item.tags)
+    ? item.tags.filter((t): t is string => typeof t === 'string' && t.trim().length > 0).map((t) => t.trim())
+    : undefined
+
+  const assignment: Assignment = {
     id: item.id.trim(),
     courseId: item.courseId.trim(),
     title: item.title.trim(),
@@ -94,6 +103,15 @@ export function validateAssignment(raw: unknown, validCourseIds?: Set<string>): 
     dueDate,
     status,
   }
+
+  if (priority !== undefined) {
+    assignment.priority = priority
+  }
+  if (tags !== undefined && tags.length > 0) {
+    assignment.tags = tags
+  }
+
+  return assignment
 }
 
 export function validateGpaEntry(raw: unknown, validCourseIds?: Set<string>): GpaEntry | null {
