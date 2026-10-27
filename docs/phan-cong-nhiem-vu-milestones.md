@@ -107,13 +107,13 @@ Dựa trên phân tích commit history trên Git và trách nhiệm chuyên môn
 
 ### Milestone W3: Advanced Assignments & Smart Filters (07/10 – 13/10/2026)
 - **Mục tiêu:** Nâng cấp quản lý bài tập: thêm mức độ ưu tiên (Priority), gắn nhãn (Tags), bộ lọc đa tiêu chí kết hợp tìm kiếm và kiểm thử workflow bài tập nâng cao.
-- **Trạng thái:** 📋 To Do & Testing
+- **Trạng thái:** ✅ Hoàn thành (Done)
 
 | Cột Kanban | Tên nhiệm vụ | Người phụ trách | Hạn chót | Mô tả / Tiêu chí nghiệm thu |
 |---|---|---|:---:|---|
-| `To Do` | **W3 · 08/10 · Thêm mức ưu tiên và nhãn bài tập** | Thuận | 2026-10-08 | Owner: Thuận<br>Giai đoạn: W3 (08/10)<br>Goal: Giúp người dùng nhận biết bài tập quan trọng và phân nhóm theo chủ đề.<br>Nhánh gợi ý: feat/assignment-priority-tags<br><br>Tasks:<br>- Thêm mức ưu tiên thấp/vừa/cao.<br>- Cho phép gắn nhãn ngắn cho bài tập.<br>- Hiển thị ưu tiên/nhãn trong danh sách và... |
-| `To Do` | **W3 · 10/10 · Tìm kiếm và bộ lọc kết hợp** | Thế | 2026-10-10 | Owner: Thế<br>Giai đoạn: W3 (10/10)<br>Goal: Mở rộng danh sách deadline để tìm nhanh theo tiêu đề/mô tả và kết hợp bộ lọc.<br>Nhánh gợi ý: feat/assignment-search-filters<br><br>Tasks:<br>- Tìm theo tiêu đề và mô tả.<br>- Kết hợp môn, trạng thái và ưu tiên.<br>- Có thao tác xóa toàn bộ điều kiện lọc.... |
-| `Testing` | **W3 · 13/10 · Kiểm thử workflow bài tập nâng cao** | Trường | 2026-10-13 | Owner: Trường<br>Giai đoạn: W3 (13/10)<br>Goal: Kiểm tra đồng thời CRUD, tìm kiếm, bộ lọc, ưu tiên và deadline.<br>Nhánh gợi ý: test/assignment-priority-search<br><br>Tasks:<br>- Bao phủ kết hợp nhiều filter và reset.<br>- Kiểm tra deadline quá hạn/hoàn thành.<br>- Kiểm tra dữ liệu giữ nguyên sau re... |
+| `Done` | **W3 · 08/10 · Thêm mức ưu tiên và nhãn bài tập** | Thuận | 2026-10-08 | Owner: Thuận<br>Giai đoạn: W3 (08/10)<br>Goal: Giúp người dùng nhận biết bài tập quan trọng và phân nhóm theo chủ đề.<br>Nhánh gợi ý: feat/assignment-priority-tags<br><br>Tasks:<br>- Thêm mức ưu tiên thấp/vừa/cao.<br>- Cho phép gắn nhãn ngắn cho bài tập.<br>- Hiển thị ưu tiên/nhãn trong danh sách và... |
+| `Done` | **W3 · 10/10 · Tìm kiếm và bộ lọc kết hợp** | Thế | 2026-10-10 | Owner: Thế<br>Giai đoạn: W3 (10/10)<br>Goal: Mở rộng danh sách deadline để tìm nhanh theo tiêu đề/mô tả và kết hợp bộ lọc.<br>Nhánh gợi ý: feat/assignment-search-filters<br><br>Tasks:<br>- Tìm theo tiêu đề và mô tả.<br>- Kết hợp môn, trạng thái và ưu tiên.<br>- Có thao tác xóa toàn bộ điều kiện lọc.... |
+| `Done` | **W3 · 13/10 · Kiểm thử workflow bài tập nâng cao** | Trường | 2026-10-13 | Owner: Trường<br>Giai đoạn: W3 (13/10)<br>Goal: Kiểm tra đồng thời CRUD, tìm kiếm, bộ lọc, ưu tiên và deadline.<br>Nhánh gợi ý: test/assignment-priority-search<br><br>Tasks:<br>- Bao phủ kết hợp nhiều filter và reset.<br>- Kiểm tra deadline quá hạn/hoàn thành.<br>- Kiểm tra dữ liệu giữ nguyên sau re... |
 
 ---
 
