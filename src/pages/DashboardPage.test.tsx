@@ -24,4 +24,32 @@ describe('DashboardPage', () => {
     expect(progressLegend.querySelector('b')).toHaveTextContent('1')
     expect(todoLegend.querySelector('b')).toHaveTextContent('2')
   })
+
+  it('renders priority badges and tag chips for upcoming assignments', () => {
+    const dataWithPriority: AppData = {
+      courses: [{ id: 'c1', name: 'Lập trình Web', teacher: 'Thầy An', credits: 3, color: '#6558d3' }],
+      schedules: [],
+      assignments: [
+        {
+          id: 'a1',
+          courseId: 'c1',
+          title: 'Đồ án cuối kỳ',
+          description: 'Nộp slide và mã nguồn',
+          dueDate: '2099-10-15T23:59',
+          status: 'todo',
+          priority: 'high',
+          tags: ['React', 'Đồ án'],
+        },
+      ],
+      gpaEntries: [],
+    }
+
+    render(<DashboardPage data={dataWithPriority} onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('heading', { name: 'Deadline sắp tới' })).toBeInTheDocument()
+    expect(screen.getByText('Đồ án cuối kỳ')).toBeInTheDocument()
+    expect(screen.getByText('Cao')).toBeInTheDocument()
+    expect(screen.getByText('#React')).toBeInTheDocument()
+    expect(screen.getByText('#Đồ án')).toBeInTheDocument()
+  })
 })

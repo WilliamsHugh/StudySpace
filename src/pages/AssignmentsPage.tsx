@@ -1,14 +1,17 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { assignmentRepository } from '../data/storage'
 import {
+  filterAssignments,
   isOverdue,
+  parseTags,
+  priorityLabels,
   sortAssignmentsByDeadline,
   statusLabels,
   validateAssignment,
   type AssignmentErrors,
   type AssignmentInput,
 } from '../domain/assignments'
-import type { AppData, Assignment, AssignmentStatus, Course } from '../types'
+import type { AppData, Assignment, AssignmentPriority, AssignmentStatus, Course } from '../types'
 import { FieldError } from '../components/FieldError'
 
 type Props = {
@@ -22,6 +25,8 @@ const blankForm: AssignmentInput = {
   description: '',
   dueDate: '',
   status: 'todo',
+  priority: 'medium',
+  tags: [],
 }
 
 const dateFormatter = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' })
@@ -32,20 +37,33 @@ function courseName(courses: Course[], courseId: string) {
 
 export function AssignmentsPage({ data, updateData }: Props) {
   const [form, setForm] = useState<AssignmentInput>(blankForm)
+  const [tagsInput, setTagsInput] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [errors, setErrors] = useState<AssignmentErrors>({})
   const [courseFilter, setCourseFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState<'all' | AssignmentStatus>('all')
+  const [priorityFilter, setPriorityFilter] = useState<'all' | AssignmentPriority>('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const visibleAssignments = useMemo(
     () =>
-      sortAssignmentsByDeadline(data.assignments).filter(
-        (assignment) =>
-          (courseFilter === 'all' || assignment.courseId === courseFilter) &&
-          (statusFilter === 'all' || assignment.status === statusFilter),
-      ),
-    [courseFilter, data.assignments, statusFilter],
+      filterAssignments(sortAssignmentsByDeadline(data.assignments), {
+        courseId: courseFilter,
+        status: statusFilter,
+        priority: priorityFilter,
+        searchQuery,
+      }),
+    [courseFilter, data.assignments, priorityFilter, searchQuery, statusFilter],
   )
+
+  const isFiltered = courseFilter !== 'all' || statusFilter !== 'all' || priorityFilter !== 'all' || searchQuery.trim() !== ''
+
+  function clearAllFilters() {
+    setCourseFilter('all')
+    setStatusFilter('all')
+    setPriorityFilter('all')
+    setSearchQuery('')
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault()
@@ -53,7 +71,13 @@ export function AssignmentsPage({ data, updateData }: Props) {
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
 
-    const assignment: Assignment = { ...form, id: editingId ?? crypto.randomUUID() }
+    const assignment: Assignment = {
+      ...form,
+      id: editingId ?? crypto.randomUUID(),
+      priority: form.priority ?? 'medium',
+      tags: parseTags(tagsInput),
+    }
+
     updateData((current) =>
       editingId
         ? assignmentRepository.update(current, assignment)
@@ -64,6 +88,7 @@ export function AssignmentsPage({ data, updateData }: Props) {
 
   function resetForm() {
     setForm(blankForm)
+    setTagsInput('')
     setEditingId(null)
     setErrors({})
   }
@@ -76,7 +101,10 @@ export function AssignmentsPage({ data, updateData }: Props) {
       description: assignment.description,
       dueDate: assignment.dueDate.slice(0, 16),
       status: assignment.status,
+      priority: assignment.priority ?? 'medium',
+      tags: assignment.tags ?? [],
     })
+    setTagsInput(assignment.tags?.join(', ') ?? '')
     setErrors({})
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -160,6 +188,30 @@ export function AssignmentsPage({ data, updateData }: Props) {
             </label>
           </div>
 
+          <div className="form-row">
+            <label>
+              Mức ưu tiên
+              <select
+                aria-label="Mức ưu tiên bài tập"
+                value={form.priority ?? 'medium'}
+                onChange={(event) => setForm({ ...form, priority: event.target.value as AssignmentPriority })}
+              >
+                {Object.entries(priorityLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Nhãn (tags)
+              <input
+                value={tagsInput}
+                onChange={(event) => setTagsInput(event.target.value)}
+                placeholder="Ví dụ: Báo cáo, Đồ án"
+                aria-label="Nhãn bài tập"
+              />
+            </label>
+          </div>
+
           <div className="button-row">
             <button className="primary" type="submit" disabled={data.courses.length === 0}>
               {editingId ? 'Lưu thay đổi' : 'Thêm bài tập'}
@@ -176,6 +228,14 @@ export function AssignmentsPage({ data, updateData }: Props) {
             <h2>Danh sách bài tập</h2>
           </div>
           <div className="filters">
+            <input
+              type="search"
+              className="filter-search"
+              aria-label="Tìm kiếm bài tập"
+              placeholder="Tìm theo tiêu đề, mô tả hoặc nhãn..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
             <select aria-label="Lọc theo môn" value={courseFilter} onChange={(event) => setCourseFilter(event.target.value)}>
               <option value="all">Tất cả môn</option>
               {data.courses.map((course) => <option key={course.id} value={course.id}>{course.name}</option>)}
@@ -188,6 +248,27 @@ export function AssignmentsPage({ data, updateData }: Props) {
               <option value="all">Tất cả trạng thái</option>
               {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </select>
+            <select
+              aria-label="Lọc theo mức ưu tiên"
+              value={priorityFilter}
+              onChange={(event) => setPriorityFilter(event.target.value as 'all' | AssignmentPriority)}
+            >
+              <option value="all">Tất cả ưu tiên</option>
+              {Object.entries(priorityLabels).map(([value, label]) => (
+                <option key={value} value={value}>Ưu tiên {label}</option>
+              ))}
+            </select>
+            {isFiltered && (
+              <button
+                type="button"
+                className="button secondary"
+                onClick={clearAllFilters}
+                aria-label="Đặt lại"
+                style={{ fontSize: '0.78rem', padding: '6px 10px', whiteSpace: 'nowrap' }}
+              >
+                Đặt lại
+              </button>
+            )}
           </div>
         </div>
 
@@ -195,13 +276,19 @@ export function AssignmentsPage({ data, updateData }: Props) {
           <div className="empty-state">
             <span>✓</span>
             <h3>Chưa có bài tập phù hợp</h3>
-            <p>Thêm bài tập mới hoặc thay đổi bộ lọc để xem kết quả.</p>
+            <p>{isFiltered ? 'Không tìm thấy bài tập nào khớp với tiêu chí tìm kiếm và bộ lọc.' : 'Thêm bài tập mới để theo dõi tiến độ học tập.'}</p>
+            {isFiltered && (
+              <button type="button" onClick={clearAllFilters} style={{ marginTop: '10px' }}>
+                Xóa toàn bộ điều kiện lọc
+              </button>
+            )}
           </div>
         ) : (
           <div className="assignment-list">
             {visibleAssignments.map((assignment) => {
               const overdue = isOverdue(assignment)
               const course = data.courses.find((item) => item.id === assignment.courseId)
+              const priority = assignment.priority ?? 'medium'
               return (
                 <article className={`assignment-card ${overdue ? 'overdue' : ''}`} key={assignment.id}>
                   <div className="color-mark" style={{ background: course?.color ?? '#94a3b8' }} />
@@ -213,10 +300,20 @@ export function AssignmentsPage({ data, updateData }: Props) {
                       </div>
                       <div className="badges">
                         {overdue && <span className="badge danger">Quá hạn</span>}
+                        <span className={`badge priority-${priority}`}>
+                          {priorityLabels[priority]}
+                        </span>
                         <span className={`badge status-${assignment.status}`}>{statusLabels[assignment.status]}</span>
                       </div>
                     </div>
                     {assignment.description && <p>{assignment.description}</p>}
+                    {assignment.tags && assignment.tags.length > 0 && (
+                      <div className="assignment-tags" aria-label="Nhãn bài tập">
+                        {assignment.tags.map((tag) => (
+                          <span key={tag} className="tag-chip">#{tag}</span>
+                        ))}
+                      </div>
+                    )}
                     <div className="assignment-footer">
                       <time dateTime={assignment.dueDate}>Hạn: {dateFormatter.format(new Date(assignment.dueDate))}</time>
                       <div className="inline-actions">
