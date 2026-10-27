@@ -107,7 +107,7 @@ Dựa trên phân tích commit history trên Git và trách nhiệm chuyên môn
 
 ### Milestone W3: Advanced Assignments & Smart Filters (07/10 – 13/10/2026)
 - **Mục tiêu:** Nâng cấp quản lý bài tập: thêm mức độ ưu tiên (Priority), gắn nhãn (Tags), bộ lọc đa tiêu chí kết hợp tìm kiếm và kiểm thử workflow bài tập nâng cao.
-- **Trạng thái:** ✅ Hoàn thành (Done)
+- **Trạng thái:** ✅ Hoàn thành (3/3 tasks đã nghiệm thu và kiểm thử)
 
 | Cột Kanban | Tên nhiệm vụ | Người phụ trách | Hạn chót | Mô tả / Tiêu chí nghiệm thu |
 |---|---|---|:---:|---|
