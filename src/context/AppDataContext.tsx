@@ -8,6 +8,8 @@ interface AppDataContextValue extends AppData {
   deleteCourse: (id: string) => void
   saveSchedule: (schedule: Schedule) => void
   deleteSchedule: (id: string) => void
+  storageError: string | null
+  clearStorageError: () => void
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
@@ -19,9 +21,17 @@ export function AppDataProvider({ children, initialData }: { children: ReactNode
     assignments: initialData.assignments ?? [],
     gpaEntries: initialData.gpaEntries ?? [],
   } : loadAppData())
+  const [storageError, setStorageError] = useState<string | null>(null)
 
   useEffect(() => {
-    saveAppData(data)
+    const success = saveAppData(data)
+    if (!success) {
+      setStorageError(
+        'Không thể lưu dữ liệu vào bộ nhớ trình duyệt (hết dung lượng hoặc bị chặn lưu trữ). Vui lòng sao lưu dữ liệu hoặc dọn dẹp bộ nhớ để tránh mất mát.'
+      )
+    } else {
+      setStorageError(null)
+    }
   }, [data])
 
   const value = useMemo<AppDataContextValue>(() => ({
@@ -50,7 +60,9 @@ export function AppDataProvider({ children, initialData }: { children: ReactNode
       ...current,
       schedules: current.schedules.filter((schedule) => schedule.id !== id),
     })),
-  }), [data])
+    storageError,
+    clearStorageError: () => setStorageError(null),
+  }), [data, storageError])
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>
 }

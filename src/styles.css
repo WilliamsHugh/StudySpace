@@ -52,6 +52,11 @@ button.primary:hover { background: #1d4ed8; }
 .notice, .global-error { border-radius: 10px; padding: 12px 14px; color: #92400e; background: #fffbeb; line-height: 1.45; }
 .notice { margin-bottom: 17px; font-size: .88rem; }
 .global-error { margin-bottom: 18px; color: #991b1b; background: #fef2f2; }
+.storage-error-banner { background: #fef2f2; border-bottom: 2px solid #ef4444; color: #991b1b; padding: 12px 24px; }
+.storage-error-content { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.storage-error-text { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; line-height: 1.45; }
+.storage-error-dismiss { background: transparent; border: none; font-size: 1.1rem; color: #991b1b; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+.storage-error-dismiss:hover { background: #fee2e2; }
 
 .filters select { width: auto; min-width: 145px; padding: 8px 10px; }
 .assignment-list { display: grid; gap: 12px; }
