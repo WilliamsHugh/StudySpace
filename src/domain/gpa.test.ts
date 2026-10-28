@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateWeightedGpa, convertGrade10To4, validateGpaEntry } from './gpa'
+import { calculateWeightedGpa, compareGpaScenario, convertGrade10To4, validateGpaEntry } from './gpa'
 
 describe('GPA calculator', () => {
   it.each([[10, 4], [8.2, 3.5], [7.4, 3], [6.7, 2.5], [5.8, 2], [5.1, 1.5], [4, 1], [3.9, 0]])(
@@ -23,5 +23,24 @@ describe('GPA calculator', () => {
     expect(validateGpaEntry({ courseId: '', expectedGrade: 11, credits: 0 })).toEqual({
       courseId: 'Vui lòng chọn môn học.', expectedGrade: 'Điểm phải nằm trong khoảng từ 0 đến 10.', credits: 'Số tín chỉ phải lớn hơn 0.',
     })
+  })
+
+  it('compares current GPA with a what-if scenario without modifying original state', () => {
+    const current = [
+      { id: '1', courseId: 'c1', expectedGrade: 7.0, credits: 3 }, // 3.0 * 3 = 9.0
+      { id: '2', courseId: 'c2', expectedGrade: 8.0, credits: 3 }, // 3.5 * 3 = 10.5 => sum = 19.5 / 6 = 3.25
+    ]
+
+    const scenario = [
+      { courseId: 'c1', expectedGrade: 9.0, credits: 3 }, // 4.0 * 3 = 12.0
+      { courseId: 'c2', expectedGrade: 8.5, credits: 3 }, // 4.0 * 3 = 12.0 => sum = 24.0 / 6 = 4.0
+    ]
+
+    const comparison = compareGpaScenario(current, scenario)
+    expect(comparison.currentGpa).toBeCloseTo(3.25)
+    expect(comparison.scenarioGpa).toBeCloseTo(4.0)
+    expect(comparison.difference).toBeCloseTo(0.75)
+    expect(comparison.currentCredits).toBe(6)
+    expect(comparison.scenarioCredits).toBe(6)
   })
 })

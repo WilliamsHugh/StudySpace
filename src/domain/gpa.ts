@@ -44,3 +44,46 @@ export function calculateWeightedGpa(entries: GpaEntry[]): number | null {
   )
   return weightedPoints / totalCredits
 }
+
+export interface GpaScenarioItem {
+  courseId: string
+  expectedGrade: number
+  credits: number
+}
+
+export interface GpaComparisonResult {
+  currentGpa: number | null
+  scenarioGpa: number | null
+  difference: number | null
+  currentCredits: number
+  scenarioCredits: number
+}
+
+/**
+ * So sánh điểm GPA hiện tại và kịch bản dự đoán mà không làm thay đổi hay ghi đè state chính.
+ */
+export function compareGpaScenario(
+  currentEntries: GpaEntry[],
+  scenarioItems: GpaScenarioItem[],
+): GpaComparisonResult {
+  const currentGpa = calculateWeightedGpa(currentEntries)
+  const scenarioEntries: GpaEntry[] = scenarioItems.map((item, idx) => ({
+    id: `scenario-${idx}`,
+    courseId: item.courseId,
+    expectedGrade: item.expectedGrade,
+    credits: item.credits,
+  }))
+  const scenarioGpa = calculateWeightedGpa(scenarioEntries)
+  const difference =
+    currentGpa !== null && scenarioGpa !== null ? Number((scenarioGpa - currentGpa).toFixed(2)) : null
+  const currentCredits = currentEntries.reduce((sum, e) => sum + (e.credits || 0), 0)
+  const scenarioCredits = scenarioItems.reduce((sum, e) => sum + (e.credits || 0), 0)
+
+  return {
+    currentGpa,
+    scenarioGpa,
+    difference,
+    currentCredits,
+    scenarioCredits,
+  }
+}
