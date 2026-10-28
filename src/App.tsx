@@ -36,6 +36,11 @@ function AppContent() {
 
   return (
     <div className="app-shell">
+      {/* Skip to main content link for keyboard accessibility */}
+      <a href="#main-content" className="skip-link">
+        Chuyển đến nội dung chính
+      </a>
+
       {storageError && (
         <div className="storage-error-banner" role="alert" aria-live="assertive">
           <div className="storage-error-content">
@@ -71,16 +76,18 @@ function AppContent() {
           💾 Sao lưu / Khôi phục
         </button>
       </header>
-      {page === 'dashboard' && <DashboardPage data={data} onNavigate={setPage} />}
-      {page === 'courses' && <CoursesPage />}
-      {page === 'schedule' && <SchedulePage />}
-      {(page === 'assignments' || page === 'gpa') && <main>
-        <div className="page-title">
-          <div><span className="eyebrow">Deadline Tracker</span><h1>{page === 'assignments' ? 'Bài tập & deadline' : 'GPA Simulator'}</h1></div>
-          <p>{page === 'assignments' ? 'Sắp xếp ưu tiên, theo dõi tiến độ và không bỏ lỡ hạn nộp.' : 'Thử các mức điểm dự kiến và xem GPA có trọng số ngay lập tức.'}</p>
-        </div>
-        {page === 'assignments' ? <AssignmentsPage data={data} updateData={updateData} /> : <GpaPage data={data} updateData={updateData} />}
-      </main>}
+      <div id="main-content" tabIndex={-1} className="main-content-wrapper">
+        {page === 'dashboard' && <DashboardPage data={data} onNavigate={setPage} />}
+        {page === 'courses' && <CoursesPage />}
+        {page === 'schedule' && <SchedulePage />}
+        {(page === 'assignments' || page === 'gpa') && <main>
+          <div className="page-title">
+            <div><span className="eyebrow">Deadline Tracker</span><h1>{page === 'assignments' ? 'Bài tập & deadline' : 'GPA Simulator'}</h1></div>
+            <p>{page === 'assignments' ? 'Sắp xếp ưu tiên, theo dõi tiến độ và không bỏ lỡ hạn nộp.' : 'Thử các mức điểm dự kiến và xem GPA có trọng số ngay lập tức.'}</p>
+          </div>
+          {page === 'assignments' ? <AssignmentsPage data={data} updateData={updateData} /> : <GpaPage data={data} updateData={updateData} />}
+        </main>}
+      </div>
       {showBackupModal && (
         <BackupRestoreModal
           data={data}

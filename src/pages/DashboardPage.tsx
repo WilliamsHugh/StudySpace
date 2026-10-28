@@ -29,7 +29,7 @@ export function DashboardPage({ data, onNavigate }: { data: AppData; onNavigate:
   )
 
   return <main className="dash-page">
-    <div className="dash-welcome"><div><p className="dash-date">{dateText}</p><h1>Chào Thuận, bắt đầu nhé!</h1><p>Một chút tập trung hôm nay sẽ giúp bạn tiến xa hơn.</p></div><button className="dash-primary" onClick={() => onNavigate('assignments')}>＋ Thêm công việc</button></div>
+    <div className="dash-welcome"><div><p className="dash-date">{dateText}</p><h1>Chào Thuận, bắt đầu nhé!</h1><p>Một chút tập trung hôm nay sẽ giúp bạn tiến xa hơn.</p></div><button className="dash-primary" onClick={() => onNavigate('assignments')} aria-label="Thêm công việc mới">＋ Thêm công việc</button></div>
     <section className="dash-stats" aria-label="Tổng quan học tập">
       <article className="dash-stat"><span className="dash-stat-icon purple">▤</span><small>HỌC TẬP</small><strong>{data.courses.length}<em> môn học</em></strong><span>Đang theo dõi trong học kỳ</span></article>
       <article className="dash-stat"><span className="dash-stat-icon blue">☷</span><small>CÔNG VIỆC</small><strong>{data.assignments.length}<em> nhiệm vụ</em></strong><span><b>{completed} hoàn thành</b> · {data.assignments.length - completed} còn lại</span></article>
@@ -37,8 +37,8 @@ export function DashboardPage({ data, onNavigate }: { data: AppData; onNavigate:
       <article className="dash-stat"><span className="dash-stat-icon green">✧</span><small>MỤC TIÊU</small><strong>{gpa == null ? '—' : gpa.toFixed(2)}<em> / 4.00 GPA</em></strong><span>{gpa == null ? 'Nhập điểm dự kiến để xem GPA' : 'GPA dự kiến theo tín chỉ'}</span></article>
     </section>
     <div className="dash-columns">
-      <section className="dash-panel"><header className="dash-panel-head"><div><h2>Deadline sắp tới</h2><p>Các việc cần hoàn thành tiếp theo</p></div><button onClick={() => onNavigate('assignments')}>Xem tất cả →</button></header>
-        <label className="dash-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm công việc hoặc môn học" /></label>
+      <section className="dash-panel"><header className="dash-panel-head"><div><h2>Deadline sắp tới</h2><p>Các việc cần hoàn thành tiếp theo</p></div><button onClick={() => onNavigate('assignments')} aria-label="Xem tất cả bài tập">Xem tất cả →</button></header>
+        <label className="dash-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm công việc hoặc môn học" aria-label="Tìm công việc hoặc môn học" /></label>
         <div className="dash-list">{filtered.length === 0 ? <div className="dash-empty"><span>✓</span><strong>{upcoming.length ? 'Không tìm thấy công việc' : 'Chưa có deadline sắp tới'}</strong><small>{upcoming.length ? 'Thử từ khóa khác nhé.' : 'Thêm deadline để bắt đầu theo dõi.'}</small></div> : filtered.map((item: Assignment) => {
           const course = courseById.get(item.courseId)
           const priority = item.priority ?? 'medium'

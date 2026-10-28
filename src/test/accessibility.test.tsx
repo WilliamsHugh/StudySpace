@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import App from '../App'
+import { FieldError } from '../components/FieldError'
 import { Modal } from '../components/Modal'
 import { CourseForm } from '../features/courses/CourseForm'
 import { ScheduleForm } from '../features/schedule/ScheduleForm'
@@ -53,6 +55,30 @@ describe('Accessibility (A11y) Baseline Test Suite', () => {
         expect(onClose).toHaveBeenCalledTimes(1)
       }
     })
+
+    it('traps Tab key navigation inside modal focusable elements', () => {
+      render(
+        <Modal title="Focus Trap Modal" onClose={vi.fn()}>
+          <div>
+            <input aria-label="First input" type="text" />
+            <button type="button">Action Button</button>
+          </div>
+        </Modal>,
+      )
+
+      const closeBtn = screen.getByRole('button', { name: 'Đóng' })
+      const actionBtn = screen.getByRole('button', { name: 'Action Button' })
+
+      // Focus last element (Action Button), press Tab -> wraps to closeBtn
+      actionBtn.focus()
+      expect(document.activeElement).toBe(actionBtn)
+      fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab' })
+      expect(document.activeElement).toBe(closeBtn)
+
+      // Shift+Tab on closeBtn -> wraps to actionBtn
+      fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab', shiftKey: true })
+      expect(document.activeElement).toBe(actionBtn)
+    })
   })
 
   describe('Form accessibility & labels', () => {
@@ -79,6 +105,17 @@ describe('Accessibility (A11y) Baseline Test Suite', () => {
       expect(nameInput).toHaveAttribute('aria-invalid', 'true')
     })
 
+    it('links input error messages via aria-describedby in CourseForm', () => {
+      render(<CourseForm onSave={vi.fn()} onCancel={vi.fn()} />)
+      fireEvent.click(screen.getByRole('button', { name: /Lưu môn học/i }))
+
+      const nameInput = screen.getByLabelText(/Tên môn học/i)
+      expect(nameInput).toHaveAttribute('aria-describedby', 'course-name-error')
+      const errorEl = document.getElementById('course-name-error')
+      expect(errorEl).not.toBeNull()
+      expect(errorEl).toHaveTextContent(/Tên môn học là bắt buộc/i)
+    })
+
     it('associates all ScheduleForm inputs with labels and handles validation states', () => {
       const mockCourses = [
         { id: 'c1', name: 'Lập trình Web', teacher: 'Thầy An', credits: 3, color: '#6558d3' },
@@ -94,6 +131,23 @@ describe('Accessibility (A11y) Baseline Test Suite', () => {
       // Submit without selecting course to trigger aria-invalid
       fireEvent.click(screen.getByRole('button', { name: /Lưu lịch học/i }))
       expect(screen.getByLabelText(/Môn học/i)).toHaveAttribute('aria-invalid', 'true')
+    })
+
+    it('FieldError renders with role="alert" and aria-live="polite"', () => {
+      render(<FieldError message="Trường này là bắt buộc." />)
+      const alert = screen.getByRole('alert')
+      expect(alert).toBeInTheDocument()
+      expect(alert).toHaveAttribute('aria-live', 'polite')
+      expect(alert).toHaveTextContent('Trường này là bắt buộc.')
+    })
+  })
+
+  describe('Keyboard navigation and Skip-Link', () => {
+    it('renders a skip-to-content link pointing to #main-content', () => {
+      render(<App />)
+      const skipLink = screen.getByRole('link', { name: /Chuyển đến nội dung chính/i })
+      expect(skipLink).toBeInTheDocument()
+      expect(skipLink).toHaveAttribute('href', '#main-content')
     })
   })
 })

@@ -61,11 +61,12 @@ export function ScheduleForm({
             setConflictBlocked(false)
           }}
           aria-invalid={!!errors.courseId}
+          aria-describedby={errors.courseId ? 'schedule-course-error' : undefined}
         >
           <option value="">Chọn môn học</option>
           {courses.map((course) => <option key={course.id} value={course.id}>{course.name}</option>)}
         </select>
-        {errors.courseId && <small className="error">{errors.courseId}</small>}
+        {errors.courseId && <small id="schedule-course-error" className="error">{errors.courseId}</small>}
       </div>
       <div className="field">
         <label htmlFor="day">Ngày học <span>*</span></label>
@@ -104,8 +105,9 @@ export function ScheduleForm({
               setConflictBlocked(false)
             }}
             aria-invalid={!!errors.endTime}
+            aria-describedby={errors.endTime ? 'end-time-error' : undefined}
           />
-          {errors.endTime && <small className="error">{errors.endTime}</small>}
+          {errors.endTime && <small id="end-time-error" className="error">{errors.endTime}</small>}
         </div>
       </div>
       <div className="field">

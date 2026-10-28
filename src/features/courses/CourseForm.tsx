@@ -21,8 +21,14 @@ export function CourseForm({ course, onSave, onCancel }: { course?: Course; onSa
     <form onSubmit={submit} noValidate>
       <div className="field">
         <label htmlFor="course-name">Tên môn học <span>*</span></label>
-        <input id="course-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} aria-invalid={!!errors.name} />
-        {errors.name && <small className="error">{errors.name}</small>}
+        <input
+          id="course-name"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? 'course-name-error' : undefined}
+        />
+        {errors.name && <small id="course-name-error" className="error">{errors.name}</small>}
       </div>
       <div className="field">
         <label htmlFor="teacher">Giảng viên</label>
@@ -30,8 +36,17 @@ export function CourseForm({ course, onSave, onCancel }: { course?: Course; onSa
       </div>
       <div className="field">
         <label htmlFor="credits">Số tín chỉ <span>*</span></label>
-        <input id="credits" type="number" min="1" max="10" value={form.credits} onChange={(e) => setForm({ ...form, credits: Number(e.target.value) })} aria-invalid={!!errors.credits} />
-        {errors.credits && <small className="error">{errors.credits}</small>}
+        <input
+          id="credits"
+          type="number"
+          min="1"
+          max="10"
+          value={form.credits}
+          onChange={(e) => setForm({ ...form, credits: Number(e.target.value) })}
+          aria-invalid={!!errors.credits}
+          aria-describedby={errors.credits ? 'credits-error' : undefined}
+        />
+        {errors.credits && <small id="credits-error" className="error">{errors.credits}</small>}
       </div>
       <fieldset className="field color-field">
         <legend>Màu nhận diện</legend>
