@@ -161,6 +161,6 @@ Dựa trên phân tích commit history trên Git và trách nhiệm chuyên môn
 Một task được kéo sang cột **Done** trên Trello khi thỏa mãn toàn bộ các điều kiện:
 - [x] Đã code hoàn chỉnh và tuân thủ định dạng TypeScript/React.
 - [x] Có kiểm thử đơn vị hoặc kiểm thử hồi quy tương ứng (Unit / Regression Test).
-- [x] Kiểm thử tự động chạy pass (hiện tại `32/32 tests pass`).
+- [x] Kiểm thử tự động chạy pass (hiện tại `114/114 tests pass`).
 - [x] Không gây lỗi tràn ngang (overflow) trên thiết bị di động (mobile responsive 390px).
 - [x] Đã cập nhật biên bản hoặc ghi chú kiểm thử trong thư mục `docs/` nếu là task Milestone.
