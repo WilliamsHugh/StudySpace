@@ -1,86 +1,87 @@
-# Biên Bản Phân Loại & Tái Hiện Lỗi Dữ Liệu LocalStorage (Storage Hardening Triage)
+# Biên Bản Tái Hiện & Phân Loại Lỗi Dữ Liệu Cục Bộ (Storage Hardening Triage Notes)
 
 > **Milestone:** W5 — Hardening, Accessibility & Release Candidate  
 > **Nhiệm vụ:** W5 · 25/10 · Tái hiện và phân loại lỗi dữ liệu local  
-> **Người thực hiện:** Thuận (WilliamsHugh) & Đội ngũ kỹ thuật StudySpace  
-> **Trello Card ID:** `6ade127c07adeca4e8fb9877`  
+> **Người thực hiện:** Trần Trường Thuận (`WilliamsHugh` / `thuantruongtran0905@gmail.com`)  
+> **Trello Card ID:** `6ade127c07adeca4e8fb9877` ([Trello Link](https://trello.com/c/mZ5hD4bK/52-w5-25-10-t%C3%A1i-hi%E1%BB%87n-v%C3%A0-ph%C3%A2n-lo%E1%BA%A1i-l%E1%BB%97i-d%E1%BB%AF-li%E1%BB%87u-local))  
 > **Nhánh Git:** `fix/storage-hardening`  
 > **Ngày lập:** 25/10/2026 (Nghiệm thu đồng bộ: 28/10/2026)  
+> **Trạng thái:** ✅ Đã hoàn tất Triage, Bản vá & Kiểm chứng tự động (100% Pass)  
 
 ---
 
-## 1. Mục Tiêu & Bối Cảnh
+## 1. Mục Tiêu Triage
 
-Trong quá trình chuẩn bị phát hành phiên bản Release Candidate (RC), đội ngũ kỹ thuật đã rà soát toàn bộ vòng đời lưu trữ và đọc/ghi dữ liệu ngoại tuyến (`offline-first`) qua Web Storage API (`localStorage`). 
+Trong quá trình chuẩn bị phát hành phiên bản Release Candidate (RC), hệ thống lưu trữ dữ liệu local (`localStorage`) trên trình duyệt đối mặt với hai rủi ro cốt lõi có thể ảnh hưởng trực tiếp đến người dùng cuối:
+1. **Rủi ro 1 (Malformed / Corrupted Payload):** Dữ liệu trong `localStorage` bị lỗi cú pháp JSON, thiếu các mảng bắt buộc hoặc chứa các phần tử hỏng (`null`, thiếu ID, sai định dạng kiểu dữ liệu) do người dùng chỉnh sửa devtools hoặc lỗi phiên bản cũ dẫn tới crash trang khi render.
+2. **Rủi ro 2 (Silent Quota Exceeded / Storage Blocking):** Trình duyệt từ chối ghi dữ liệu (do đầy quota 5MB, hoặc người dùng duyệt web ở chế độ Private Browsing / tắt quyền Storage), `localStorage.setItem` ném ngoại lệ `QuotaExceededError` mà ứng dụng không bắt, dẫn tới mất dữ liệu âm thầm mà người dùng không hề hay biết.
 
-Hai rủi ro dữ liệu nghiêm trọng được phân loại, tái hiện và kiểm chứng phương án khắc phục:
-1. **Rủi ro 1 (Data Corruption Crash):** Payload `localStorage` sai cấu trúc hoặc chứa giá trị rác/`null` dẫn đến sập màn hình trắng (White Screen of Death) khi React render.
-2. **Rủi ro 2 (Storage Write Failure & Quota Exceeded):** Trình duyệt hết dung lượng lưu trữ (`QuotaExceededError`) hoặc chặn lưu trữ trong chế độ Ẩn danh (Private/Incognito) mà không có cơ chế cảnh báo người dùng và rollback dữ liệu.
-
----
-
-## 2. Chi Tiết Từng Lỗi, Các Bước Tái Hiện & Phương Án Xử Lý
-
-### 2.1. Lỗi 1: Payload localStorage Sai Cấu Trúc Gây Sập Màn Hình
-
-* **Mã định danh:** `BUG-STORAGE-01`
-* **Thẻ Trello liên kết:** `W1 · 29/09 · Bug: Dữ liệu localStorage sai cấu trúc làm lỗi màn hình` (`6ade126facd70906709d3ddd`)
-* **Mức độ nghiêm trọng:** `High / Blocker` (Gây gián đoạn hoàn toàn ứng dụng)
-
-#### Các bước tái hiện (Reproduction Steps):
-1. Mở DevTools Console trên trình duyệt tại tab StudySpace.
-2. Tiêm dữ liệu lỗi vào key lưu trữ chính:
-   ```javascript
-   localStorage.setItem('study_space_data', JSON.stringify({
-     courses: [null, { id: 'c1', name: '' }],
-     assignments: "invalid_string",
-     schedules: null
-   }));
-   ```
-3. Tải lại trang (F5).
-4. **Hiện tượng quan sát được (trước khi fix):** Hàm render tại `CoursesPage` và `DashboardPage` gọi `data.courses.map(...)` gặp phần tử `null` dẫn đến lỗi runtime `TypeError: Cannot read properties of null (reading 'id')`, toàn bộ ứng dụng sập trắng.
-
-#### Nguyên nhân gốc (Root Cause):
-Hàm `loadAppData()` trước đây chỉ dùng `JSON.parse()` cơ bản mà không kiểm tra tính toàn vẹn của từng trường mảng và kiểu dữ liệu của các thực thể con bên trong `courses`, `assignments`, `schedules`, `gpaEntries`.
-
-#### Giải pháp kỹ thuật đã triển khai & Kiểm chứng:
-- **Xây dựng bộ kiểm định Schema nghiêm ngặt:** Triển khai hàm [`isAppData`](file:///home/Williams/Projects/StudySpace/src/data/appData.ts#L30-L50) xác thực cấu trúc cấp cao và lọc sạch dữ liệu mồ côi (`sanitizeAppData`).
-- **Cơ chế Fallback an toàn:** Nếu payload bị hỏng hoặc không đạt chuẩn, hệ thống tự động ghi nhật ký cảnh báo và nạp bộ dữ liệu mặc định ban đầu (`initialData`) mà không để sập UI.
-- **Bằng chứng kiểm thử:** Bộ unit test tại [`src/data/schemaValidation.test.ts`](file:///home/Williams/Projects/StudySpace/src/data/schemaValidation.test.ts) và [`src/data/storage.test.ts`](file:///home/Williams/Projects/StudySpace/src/data/storage.test.ts) bao phủ 100% tình huống payload lỗi.
+Biên bản này ghi nhận chi tiết các bước tái hiện (Reproduction), phân loại mức độ nghiêm trọng (Severity / Impact) và các giải pháp kỹ thuật đã triển khai cùng bằng chứng kiểm thử tự động.
 
 ---
 
-### 2.2. Lỗi 2: Trình Duyệt Bị Chặn Hoặc Vượt Hạn Ngạch Ghi (`QuotaExceededError`)
+## 2. Chi Tiết Phân Loại & Tái Hiện Lỗi
 
-* **Mã định danh:** `BUG-STORAGE-02`
-* **Thẻ Trello liên kết:** `W2 · 06/10 · Bug: Không xử lý lỗi khi ghi localStorage` (`6ade127236f23d4e2198110c`)
-* **Mức độ nghiêm trọng:** `High` (Mất mát dữ liệu ngầm mà người dùng không biết)
+### Issue STO-01: Payload LocalStorage sai cấu trúc gây lỗi Render
 
-#### Các bước tái hiện (Reproduction Steps):
-1. Chạy ứng dụng trong môi trường iframe bị chặn quyền Storage (Storage Access Blocked) hoặc giả lập dung lượng bộ nhớ `localStorage` đã đầy.
-2. Người dùng tạo mới hoặc cập nhật một Môn học / Bài tập / Điểm GPA.
-3. Trình duyệt ném ngoại lệ `QuotaExceededError` (DOM Exception 22).
-4. **Hiện tượng quan sát được (trước khi fix):** Lỗi unhandled exception bung ra console, React state cập nhật cục bộ nhưng `localStorage` không lưu được; khi người dùng refresh hoặc mở tab mới, toàn bộ dữ liệu vừa nhập bị biến mất không dấu vết.
-
-#### Nguyên nhân gốc (Root Cause):
-Hàm ghi `localStorage.setItem` không được bọc trong khối `try...catch`, thiếu cơ chế phát tín hiệu báo lỗi ra ngoài component và thiếu snapshot rollback để bảo vệ dữ liệu trước đó.
-
-#### Giải pháp kỹ thuật đã triển khai & Kiểm chứng:
-- **Try-Catch & Error Signaling:** Trong [`src/data/appData.ts`](file:///home/Williams/Projects/StudySpace/src/data/appData.ts#L52-L68), bọc toàn bộ thao tác `setItem` trong `try...catch`, trả về cờ trạng thái boolean và kích hoạt callback `onError`.
-- **Banner cảnh báo trực quan:** Tại [`src/App.tsx`](file:///home/Williams/Projects/StudySpace/src/App.tsx#L43-L60), hiển thị banner cảnh báo đỏ nổi bật (`role="alert"`, `aria-live="assertive"`) khi không thể lưu trữ, kèm nút xuất JSON khẩn cấp để bảo toàn dữ liệu.
-- **Snapshot Dự phòng & Safe Rollback:** Trong [`src/data/backupService.ts`](file:///home/Williams/Projects/StudySpace/src/data/backupService.ts#L170-L210), trước khi ghi đè dữ liệu khôi phục, hệ thống tự động tạo snapshot; nếu gặp lỗi quota hoặc parse, tự động rollback về trạng thái an toàn ban đầu.
-- **Bằng chứng kiểm thử:** 14/14 automated tests tại [`src/data/backupLifecycle.test.ts`](file:///home/Williams/Projects/StudySpace/src/data/backupLifecycle.test.ts) đã kiểm chứng thành công kịch bản rollback khi ném `QuotaExceededError`.
-
----
-
-## 3. Ma Trận Đánh Giá Triage & Trạng Thái
-
-| Mã Lỗi | Tên lỗi | Phân loại | Mức độ | Trạng thái | Thẻ Trello tương ứng |
-|---|---|---|:---:|:---:|:---:|
-| `BUG-STORAGE-01` | Payload localStorage sai cấu trúc gây sập | Schema Validation | High | ✅ Đã khắc phục & verify | `6ade126facd70906709d3ddd` |
-| `BUG-STORAGE-02` | QuotaExceededError / Chặn ghi Web Storage | Storage Hardening | High | ✅ Đã khắc phục & verify | `6ade127236f23d4e2198110c` |
+- **Mã định danh:** `STO-01`
+- **Mức độ nghiêm trọng:** `High` (Có thể làm ứng dụng dừng hoạt động ngay tại màn hình khởi động).
+- **Phân loại:** Data Integrity / Crash Prevention.
+- **Môi trường bị ảnh hưởng:** Toàn bộ trình duyệt khi dữ liệu local bị hỏng hoặc sau khi import file backup lỗi.
+- **Các bước tái hiện (Reproduction Steps):**
+  1. Mở StudySpace trên trình duyệt Chrome/Firefox.
+  2. Mở Developer Tools -> Application -> Storage -> Local Storage.
+  3. Đặt giá trị `deadline-tracker:data` thành chuỗi JSON hỏng: `{"courses": [null, {"name": "No ID"}], "schedules": "invalid"}` hoặc `{ syntax error`.
+  4. Tải lại trang (F5).
+  5. *Hành vi trước khi vá:* `loadAppData()` parse ra cấu trúc không hợp lệ; các hàm render duyệt mảng gọi `.map((c) => c.name)` gặp phần tử `null` gây `TypeError: Cannot read properties of null (reading 'name')` làm trắng trang.
+- **Giải pháp kỹ thuật (Mitigation):**
+  - Tích hợp lớp `sanitizeAppData(raw)` trong [`src/data/schemaValidation.ts`](file:///home/Williams/Projects/StudySpace/src/data/schemaValidation.ts):
+    - Bọc khối `JSON.parse` trong `try / catch`, tự động fallback về `demoData` cấu trúc chuẩn nếu chuỗi JSON không hợp lệ hoặc parse ra kiểu nguyên thủy (`null`, số, chuỗi).
+    - Duyệt từng phần tử của `courses`, `schedules`, `assignments`, `gpaEntries` qua hàm validate độc lập (`validateCourse`, `validateSchedule`, v.v.).
+    - Tự động lọc bỏ các phần tử `null`, bản ghi thiếu khóa chính `id`, bản ghi tham chiếu `courseId` mồ côi (orphaned foreign keys).
+    - Tự động di trú (Auto-migration) các bản ghi legacy V1 thiếu trường `priority` và `tags` sang giá trị mặc định (`priority = 'medium'`, `tags = []`).
 
 ---
 
-## 4. Kết Luận
-Cả hai nguy cơ lỗi dữ liệu local đã được tái hiện rõ ràng, phân loại chi tiết và kiểm chứng độ ổn định với 100% test case xanh. Hệ thống lưu trữ đạt tiêu chuẩn ổn định cấp Release Candidate.
+### Issue STO-02: `setItem` thất bại không có cảnh báo tới người dùng
+
+- **Mã định danh:** `STO-02`
+- **Mức độ nghiêm trọng:** `High` (Mất dữ liệu âm thầm, vi phạm nguyên tắc phản hồi người dùng).
+- **Phân loại:** Storage Quota / Error Visibility.
+- **Môi trường bị ảnh hưởng:** Safari Private Browsing, Chrome Incognito khi bật chặn site data, hoặc khi dung lượng lưu trữ vượt quá giới hạn trình duyệt (~5MB - 10MB).
+- **Các bước tái hiện (Reproduction Steps):**
+  1. Tạo mock `Storage.prototype.setItem` ném `DOMException('QuotaExceededError')`.
+  2. Thêm mới một môn học hoặc công việc trên giao diện.
+  3. Người dùng thấy form đóng và bài tập xuất hiện tạm thời trong React memory state.
+  4. *Hành vi trước khi vá:* Ngoại lệ không được bắt hoặc chỉ log ra console; người dùng ngỡ rằng dữ liệu đã lưu an toàn. Khi đóng tab hoặc F5, toàn bộ công việc vừa tạo biến mất.
+- **Giải pháp kỹ thuật (Mitigation):**
+  - Trong [`src/data/appData.ts`](file:///home/Williams/Projects/StudySpace/src/data/appData.ts): Hàm `saveAppData` bắt lỗi an toàn và trả về giá trị `boolean` (`true` khi thành công, `false` khi có ngoại lệ).
+  - Trong [`src/context/AppDataContext.tsx`](file:///home/Williams/Projects/StudySpace/src/context/AppDataContext.tsx): Quản lý state `storageError: string | null`. Khi `saveAppData` trả về `false`, lập tức kích hoạt thông điệp cảnh báo rõ ràng.
+  - Trong [`src/App.tsx`](file:///home/Williams/Projects/StudySpace/src/App.tsx): Hiển thị banner nổi bật `.storage-error-banner` ngay đầu trang:
+    ```html
+    <div className="storage-error-banner" role="alert" aria-live="assertive">
+      <strong>Cảnh báo lưu trữ:</strong> Không thể lưu dữ liệu vào bộ nhớ trình duyệt...
+      <button aria-label="Đóng thông báo lỗi lưu trữ">×</button>
+    </div>
+    ```
+  - Cung cấp nút xóa cảnh báo `clearStorageError` và hướng dẫn người dùng xuất file JSON sao lưu kịp thời qua tính năng "Sao lưu / Khôi phục".
+
+---
+
+## 3. Bằng Chứng Kiểm Thử Tự Động (Verification Evidence)
+
+Tất cả các tình huống tái hiện và biện pháp phòng vệ đã được kiểm thử tự động tại [`src/data/storageHardening.test.tsx`](file:///home/Williams/Projects/StudySpace/src/data/storageHardening.test.tsx) với kết quả **6/6 Tests PASS (100%)**:
+
+1. `Issue 1: safely recovers when localStorage contains corrupted non-JSON string` — **PASS**
+2. `Issue 1: safely recovers when localStorage payload is primitive or null` — **PASS**
+3. `Issue 1: sanitizes corrupt records (null, missing id, invalid types) without app crash` — **PASS**
+4. `Issue 1: auto-migrates legacy v1 payload missing priority and tags` — **PASS**
+5. `Issue 2: catches QuotaExceededError in saveAppData without unhandled exception and returns false` — **PASS**
+6. `Issue 2: displays visible warning banner when storage.setItem throws QuotaExceededError in UI` — **PASS**
+
+---
+
+## 4. Kết Luận & Bàn Giao
+
+- Hai vấn đề dữ liệu local đã được phân loại, định danh mã lỗi, có bước tái hiện rõ ràng và giải pháp phòng thủ triệt để ở cả tầng dữ liệu lẫn tầng UI.
+- Thẻ công việc **`W5 · 25/10 · Tái hiện và phân loại lỗi dữ liệu local`** đủ điều kiện hoàn thành và chuyển sang danh mục **Done**.
