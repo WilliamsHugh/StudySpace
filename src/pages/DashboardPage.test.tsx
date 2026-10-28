@@ -52,4 +52,25 @@ describe('DashboardPage', () => {
     expect(screen.getByText('#React')).toBeInTheDocument()
     expect(screen.getByText('#Đồ án')).toBeInTheDocument()
   })
+
+  it('renders weekly workload widget with summary and day cards', () => {
+    const dataWithWorkload: AppData = {
+      courses: [
+        { id: 'c1', name: 'Lập trình Web', teacher: 'Thầy An', credits: 3, color: '#6558d3' },
+      ],
+      schedules: [
+        { id: 's1', courseId: 'c1', dayOfWeek: 1, startTime: '08:00', endTime: '10:00', room: 'A101' },
+      ],
+      assignments: [],
+      gpaEntries: [],
+    }
+
+    render(<DashboardPage data={dataWithWorkload} onNavigate={vi.fn()} />)
+
+    expect(screen.getByRole('region', { name: 'Tải học tập theo tuần' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Tải học tập theo tuần' })).toBeInTheDocument()
+    expect(screen.getByText('Thứ Hai')).toBeInTheDocument()
+    expect(screen.getByText('Chủ Nhật')).toBeInTheDocument()
+    expect(screen.getByText(/Tổng cộng tuần này:/i)).toBeInTheDocument()
+  })
 })

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { getOverdueAssignments, getUpcomingAssignments, priorityLabels, statusLabels } from '../domain/assignments'
 import { calculateWeightedGpa } from '../domain/gpa'
+import { calculateWeeklyWorkload } from '../domain/workload'
 import type { AppData, Assignment } from '../types'
 
 type Page = 'dashboard' | 'courses' | 'schedule' | 'assignments' | 'gpa'
@@ -21,6 +22,11 @@ export function DashboardPage({ data, onNavigate }: { data: AppData; onNavigate:
   })
   const completion = data.assignments.length ? Math.round(completed / data.assignments.length * 100) : 0
   const dateText = new Intl.DateTimeFormat('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(now)
+
+  const workload = useMemo(
+    () => calculateWeeklyWorkload(data.schedules, data.assignments, data.courses, now),
+    [data.schedules, data.assignments, data.courses],
+  )
 
   return <main className="dash-page">
     <div className="dash-welcome"><div><p className="dash-date">{dateText}</p><h1>Chào Thuận, bắt đầu nhé!</h1><p>Một chút tập trung hôm nay sẽ giúp bạn tiến xa hơn.</p></div><button className="dash-primary" onClick={() => onNavigate('assignments')}>＋ Thêm công việc</button></div>
@@ -45,6 +51,60 @@ export function DashboardPage({ data, onNavigate }: { data: AppData; onNavigate:
         <div className="dash-note">✓　{data.assignments.length ? `${inProgress} công việc đang được xử lý. Cứ tiếp tục từng bước!` : 'Thêm công việc để theo dõi tiến độ của bạn.'}</div>
       </section>
     </div>
+
+    {/* Widget Tải học tập theo tuần */}
+    <section className="dash-panel dash-workload" aria-label="Tải học tập theo tuần">
+      <header className="dash-panel-head">
+        <div>
+          <h2>Tải học tập theo tuần</h2>
+          <p>Phân bổ lịch học và hạn nộp bài tập theo từng ngày trong tuần</p>
+        </div>
+        <button onClick={() => onNavigate('schedule')}>Xem thời khóa biểu →</button>
+      </header>
+      <div className="workload-summary-bar">
+        <span>Tổng cộng tuần này: <strong>{workload.totalClasses} buổi học</strong> · <strong>{workload.totalAssignments} deadline</strong></span>
+        {workload.peakDay ? (
+          <span className="peak-badge">Ngày bận rộn nhất: <b>{workload.peakDay.dayName} ({workload.peakDay.totalItems} việc)</b></span>
+        ) : (
+          <span>Tuần này chưa có lịch bận</span>
+        )}
+      </div>
+      <div className="workload-grid">
+        {workload.days.map((day) => (
+          <div key={day.dayOfWeek} className={`workload-day-card workload-${day.level}`}>
+            <div className="workload-day-header">
+              <strong>{day.dayName}</strong>
+              <span className={`workload-status-chip ${day.level}`}>{day.statusLabel}</span>
+            </div>
+            <div className="workload-day-metrics">
+              <span>{day.classes.length} buổi</span> · <span>{day.assignments.length} hạn</span>
+            </div>
+            {day.totalItems > 0 ? (
+              <ul className="workload-items-list">
+                {day.classes.slice(0, 2).map((c) => (
+                  <li key={c.scheduleId} title={`${c.courseName} (${c.time})`}>
+                    <i style={{ background: c.color }} />
+                    <span>{c.courseName}</span>
+                    <small>{c.time}</small>
+                  </li>
+                ))}
+                {day.assignments.slice(0, 2).map((a) => (
+                  <li key={a.assignmentId} className="workload-assignment-item" title={a.title}>
+                    <span>📝 {a.title}</span>
+                  </li>
+                ))}
+                {day.totalItems > 4 && (
+                  <li className="workload-more-items">+{day.totalItems - 4} việc khác</li>
+                )}
+              </ul>
+            ) : (
+              <div className="workload-empty-day">Trống lịch</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+
     <section className="dash-panel dash-courses"><header className="dash-panel-head"><div><h2>Môn học của bạn</h2><p>Các môn đang theo dõi trong học kỳ này</p></div><button onClick={() => onNavigate('courses')}>Quản lý môn học →</button></header>
       {data.courses.length === 0 ? <div className="dash-course-empty"><span>▤</span><div><strong>Bắt đầu với môn học đầu tiên</strong><small>Thêm môn học để kết nối lịch học, deadline và điểm số.</small></div><button onClick={() => onNavigate('courses')}>＋ Thêm môn học</button></div> : <div className="dash-course-chips">{data.courses.slice(0, 6).map((course) => <button key={course.id} onClick={() => onNavigate('courses')}><i style={{ background: course.color }} />{course.name}<small>{course.credits} tín chỉ</small></button>)}</div>}
     </section><footer className="dash-footer"><span>Tiến độ bắt đầu từ một việc nhỏ.</span><span>Deadline Tracker</span></footer>
