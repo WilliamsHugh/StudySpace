@@ -29,4 +29,13 @@ describe('Modal', () => {
     fireEvent.mouseDown(screen.getByRole('dialog'))
     expect(onClose).not.toHaveBeenCalled()
   })
+
+  it('renders close button with centered icon and accessible label', () => {
+    render(<Modal title="Cửa sổ kiểm tra" onClose={vi.fn()}>Nội dung</Modal>)
+    const closeBtn = screen.getByRole('button', { name: 'Đóng' })
+    expect(closeBtn).toHaveClass('icon-button')
+    const svgIcon = closeBtn.querySelector('svg')
+    expect(svgIcon).not.toBeNull()
+    expect(svgIcon).toHaveAttribute('aria-hidden', 'true')
+  })
 })
